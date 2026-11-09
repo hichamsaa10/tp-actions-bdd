@@ -36,8 +36,7 @@ class StudentsTest {
 
     @Test
     void etudiantInexistant() throws SQLException {
-        assertEquals(Optional.empty().isPresent(),
-                     Students.getStudent(conn, 99999).isPresent());
+        assertFalse(Students.getStudent(conn, 99999).isPresent());
     }
 
     @Test
