@@ -28,4 +28,6 @@ def get_student(engine, student_id):
 
 
 def average_grade(engine):
-    raise NotImplementedError
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT AVG(grade) FROM students")).scalar()
+    return float(result) if result is not None else None
