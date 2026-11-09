@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  # Identifiants jetables de la base de test : valables uniquement dans ce job
+  DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/tp
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Préparer la base de données
+        run: bash db/setup.sh
+
+      - name: Installer Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: python-app/requirements.txt
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+        working-directory: python-app
+
+      - name: Lancer les tests
+        run: pytest -v
+        working-directory: python-app
+
+      - name: Diagnostic base de données
+        if: failure()
+        run: |
+          systemctl status postgresql.service --no-pager || true
+          ss -ltnp | grep -E '5432' || true
