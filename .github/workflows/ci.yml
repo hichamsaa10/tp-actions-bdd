@@ -60,3 +60,22 @@ jobs:
       - name: Lancer les tests
         run: npm test
         working-directory: node-app
+
+  java:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Préparer la base de données
+        run: bash db/setup.sh
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Compiler et tester
+        run: mvn -B package
+        working-directory: java-app
