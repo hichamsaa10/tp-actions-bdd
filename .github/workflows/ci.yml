@@ -38,3 +38,25 @@ jobs:
         run: |
           systemctl status postgresql.service --no-pager || true
           ss -ltnp | grep -E '5432' || true
+
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Préparer la base de données
+        run: bash db/setup.sh
+
+      - name: Installer Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les dépendances
+        run: npm ci
+        working-directory: node-app
+
+      - name: Lancer les tests
+        run: npm test
+        working-directory: node-app
