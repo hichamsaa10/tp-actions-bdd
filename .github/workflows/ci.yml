@@ -12,16 +12,19 @@ jobs:
   python:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
     steps:
       - uses: actions/checkout@v4
 
       - name: Préparer la base de données
         run: bash db/setup.sh
 
-      - name: Installer Python 3.12
+      - name: Installer Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: python-app/requirements.txt
 
@@ -102,3 +105,21 @@ jobs:
       - name: Lancer les tests
         run: vendor/bin/phpunit tests
         working-directory: php-app
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [python, node, java, php]
+    steps:
+      - run: echo "Tous les tests ont réussi, build en cours"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - run: echo "Déploiement en cours"
+
+      - name: Vérifier que le secret existe
+        env:
+          TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: test -n "$TOKEN" && echo "Token présent"
